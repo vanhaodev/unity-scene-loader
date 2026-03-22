@@ -10,8 +10,8 @@ namespace vanhaodev.sceneloader
 	{
 		#region Private properties
 
-		private List<Func<Task>> _onLoadStartTask = new();
-		private List<Func<Task>> _onLoadCompleteTask = new();
+		private readonly List<Func<Task>> _onLoadStartTask = new();
+		private readonly List<Func<Task>> _onLoadCompleteTask = new();
 		private Action<float> _onProgress;
 		private int _sceneIndex = -1;
 		private List<int> _unloadSceneIndexes;
@@ -125,12 +125,13 @@ namespace vanhaodev.sceneloader
 
 		private async Task HandleLoadSceneAsync()
 		{
+			//--------------------Show loading UI---------------------\\
 			float currentProgress = 0f;
+			UpdateProgress(currentProgress);
 			CalculateProgress();
 			_ui.ShowLoading();
-			//call ui show
-			//do _onLoadStartTask
-			Debug.Log("Loading start tasks");
+			
+			//--------------------Load start tasks---------------------\\
 			for (int i = 0; i < _onLoadStartTask.Count; i++)
 			{
 				await _onLoadStartTask[i]();
@@ -138,13 +139,9 @@ namespace vanhaodev.sceneloader
 				UpdateProgress(currentProgress);
 			}
 
-			//--------------------do loading scene---------------------\\
-			// 1. Load scene mới (additive)
-			Debug.Log("Loading scene");
+			//--------------------Load new scene---------------------\\
 			AsyncOperation op = SceneManager.LoadSceneAsync(_sceneIndex, LoadSceneMode.Additive);
 			op.allowSceneActivation = false;
-
-			// 2. Loading progress (0 → 0.9)
 			while (op.progress < 0.9f)
 			{
 				float sceneProgress = op.progress / 0.9f;
@@ -156,26 +153,17 @@ namespace vanhaodev.sceneloader
 
 				await Task.Yield();
 			}
-
-			// 3. Cho phép activate
 			op.allowSceneActivation = true;
-
-			// 4. Đợi activate xong
 			while (!op.isDone)
 			{
 				await Task.Yield();
 			}
-
-			// đảm bảo đúng mốc
 			currentProgress = 0.6f;
 			UpdateProgress(currentProgress);
-
-			// 5. Set active scene
 			Scene newScene = SceneManager.GetSceneByBuildIndex(_sceneIndex);
 			SceneManager.SetActiveScene(newScene);
 
-			// 6. Unload scene cũ
-			Debug.Log("Unload old scene");
+			//--------------------Unload old scenes---------------------\\
 			for (int i = 0; i < _unloadSceneIndexes?.Count; i++)
 			{
 				int index = _unloadSceneIndexes[i];
@@ -189,13 +177,12 @@ namespace vanhaodev.sceneloader
 					UpdateProgress(currentProgress);
 				}
 			}
-
-			// đảm bảo đúng mốc
+			
 			currentProgress = 0.8f;
 			_onProgress?.Invoke(currentProgress);
 			_ui.SetProgress(currentProgress);
-			//=========================================================================\\
-			//do loading _onLoadCompleteTask
+		
+			//--------------------Load complete tasks---------------------\\
 			Debug.Log("Loading complete tasks");
 			for (int i = 0; i < _onLoadCompleteTask.Count; i++)
 			{
@@ -203,25 +190,21 @@ namespace vanhaodev.sceneloader
 				currentProgress += _completeTasksProgressPercent;
 				UpdateProgress(currentProgress);
 			}
-
-			// đảm bảo đúng mốc
+			
 			currentProgress = 1f;
 			UpdateProgress(currentProgress);
 			await Task.Delay(200);
-			//call ui hide
+		
+			//--------------------Hide loading UI---------------------\\
 			_ui.HideLoading();
-			Debug.Log("Load scene success");
 			OnFinish();
 		}
 
 		private void OnFinish()
 		{
 			_onLoadStartTask?.Clear();
-			_onLoadStartTask = null;
 			_onLoadCompleteTask?.Clear();
-			_onLoadCompleteTask = null;
 			_unloadSceneIndexes?.Clear();
-			_unloadSceneIndexes = null;
 		}
 
 		#endregion

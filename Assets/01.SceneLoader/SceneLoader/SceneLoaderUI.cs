@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -14,6 +15,14 @@ namespace vanhaodev.sceneloader
 		#endregion
 
 		#region Private methods
+
+		private void OnEnable()
+		{
+			_currentProgress = 0;
+			_imagePercentFill.fillAmount = _currentProgress;
+			_txPercent.text = (_currentProgress * 100f).ToString("0") + "%";
+		}
+
 		private void Update()
 		{
 			_currentProgress = Mathf.Lerp(_currentProgress, _targetProgress, Time.deltaTime * 6f);
