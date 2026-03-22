@@ -18,6 +18,7 @@ namespace vanhaodev.sceneloader.tests
 				.RegisterOnLoadCompleteTask(() => Task.Delay(Random.Range(200, 1000)))
 				.RegisterOnLoadCompleteTask(() => Task.Delay(Random.Range(200, 1000)));
 			await sceneLoader.LoadScene(_homeSceneIndex);
+			Debug.Log($"Scene Loaded {_homeSceneIndex}");
 		}
 	}
 }
