@@ -1,8 +1,8 @@
 {
   "name": "com.vanhaodev.sceneloader",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "displayName": "Scene Loader",
-  "unity": "6",
+  "unity": "6.0",
   "author": {
     "name": "vanhaodev"
   }
