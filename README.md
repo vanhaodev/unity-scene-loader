@@ -22,6 +22,7 @@ It comes with a **loading UI** including a smooth **progress bar**, and allows y
 ---
 
 ## Example Setup
+If you want to try the example scene, please clone or download the full source project and open it in Unity.
 
 1. Add the following scenes in **Build Settings**:  
    - `SceneLoader.Bootstrap` → index 0  
