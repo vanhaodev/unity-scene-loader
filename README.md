@@ -42,4 +42,4 @@ It comes with a **loading UI** including a smooth **progress bar**, and allows y
 Add the following line to your project's `Packages/manifest.json`:
 
 ```json
-"com.vanhaodev.sceneloader": "https://github.com/vanhaodev/unity-scene-loader.git?path=/Packages/com.vanhaodev.sceneloader#v<version>"
+"com.vanhaodev.sceneloader": "https://github.com/vanhaodev/unity-scene-loader.git?path=Exported/com.vanhaodev.sceneloader#<version>"
