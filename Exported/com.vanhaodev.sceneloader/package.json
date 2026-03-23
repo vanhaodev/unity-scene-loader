@@ -5,5 +5,12 @@
   "unity": "6000.0",
   "author": {
     "name": "vanhaodev"
-  }
+  },
+  "samples": [
+    {
+      "displayName": "Sample",
+      "description": "Sample",
+      "path": "Samples~"
+    }
+  ]
 }
