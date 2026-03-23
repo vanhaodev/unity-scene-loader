@@ -22,7 +22,17 @@ It comes with a **loading UI** including a smooth **progress bar**, and allows y
 ---
 
 ## Example Setup
-If you want to try the example scene, please clone or download the full source project and open it in Unity.
+This package includes example scenes in the `Samples~` folder.
+
+To try them:
+
+1. Open **Package Manager** in Unity.
+2. Select **Scene Loader** package.
+3. In the **Samples** section on the right, click **Import**.
+4. The example scene will be copied to `Assets/Samples/com.vanhaodev.sceneloader/`.
+5. Open the scene from there to test the Scene Loader.
+
+Note: Example scenes are not included automatically in the project—they must be imported via the Package Manager.
 
 1. Add the following scenes in **Build Settings**:  
    - `SceneLoader.Bootstrap` → index 0  
