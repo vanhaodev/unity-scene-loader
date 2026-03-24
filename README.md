@@ -11,9 +11,10 @@ It comes with a **loading UI** including a smooth **progress bar**, and allows y
 
 ## Features
 
-- Supports **additive scene loading**:  
-  The new scene is added to the currently open scene instead of replacing it.  
-  You can optionally provide a **list of scenes to unload** after the new scene is loaded.
+- Supports **single & additive scene loading**:  
+  - **Single**: Replaces the currently active scene.  
+  - **Additive**: Loads a new scene alongside existing ones.  
+  You can optionally provide a **list of scenes to unload** after loading.
 
 - Provides example **UI prefab** for loading screen.
 
@@ -22,29 +23,23 @@ It comes with a **loading UI** including a smooth **progress bar**, and allows y
 ---
 
 ## Example Setup
-This package includes example scenes in the `Samples~` folder.
 
-To try them:
+This package includes two samples:
+- `LoadSingle`
+- `LoadAdditive`
+
+Each sample contains its own `README.md` with detailed setup instructions.
+
+### To get started:
 
 1. Open **Package Manager** in Unity.
-2. Select **Scene Loader** package.
-3. In the **Samples** section on the right, click **Import**.
-4. The example scene will be copied to `Assets/Samples/com.vanhaodev.sceneloader/`.
-5. Open the scene from there to test the Scene Loader.
+2. Select the **Scene Loader** package.
+3. In the **Samples** section, click **Import**.
+4. The samples will be copied to:
+   `Assets/Samples/com.vanhaodev.sceneloader/`
+5. Open a sample and follow the instructions in its `README.md`.
 
-Note: Example scenes are not included automatically in the project—they must be imported via the Package Manager.
-
-1. Add the following scenes in **Build Settings**:  
-   - `SceneLoader.Bootstrap` → index 0  
-   - `SceneLoader.Scene1` → index 1  
-   - `SceneLoader.Scene2` → index 2  
-
-   This ensures the loader system can find scene indices correctly.
-
-2. In `SceneLoader.Bootstrap`, there is a **GameObject prefab** named `SceneLoader`.  
-   - This prefab contains the loading UI and core SceneLoader logic.  
-
-3. Use the `SceneLoader` prefab to manage scene transitions, register tasks, and display loading progress.
+> ⚠️ Samples are not included automatically in your project. They must be imported via the Package Manager.
 
 ---
 
