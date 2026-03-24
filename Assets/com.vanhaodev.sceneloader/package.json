@@ -1,15 +1,18 @@
 {
   "name": "com.vanhaodev.sceneloader",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "displayName": "Scene Loader",
+  "description": "A lightweight scene loading system with built-in loading UI and smooth progress transitions.",
   "unity": "6000.0",
   "author": {
     "name": "vanhaodev"
   },
+  "documentationUrl": "https://github.com/vanhaodev/unity-scene-loader",
+  "keywords": ["vanhaodev", "scene", "loader"],
   "samples": [
     {
-      "displayName": "Sample",
-      "description": "Sample",
+      "displayName": "Single & Additive Scene Loading Sample",
+      "description": "Preconfigured sample demonstrating both single and additive scene loading.",
       "path": "Samples~"
     }
   ]

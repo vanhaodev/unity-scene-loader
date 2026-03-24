@@ -376,7 +376,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 758737780529126313}
         m_TargetAssemblyTypeName: SceneTest, Assembly-CSharp
-        m_MethodName: Load
+        m_MethodName: LoadAdditive
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

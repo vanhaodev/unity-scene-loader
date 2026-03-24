@@ -6,32 +6,33 @@ using UnityEngine.SceneManagement;
 
 namespace vanhaodev.sceneloader
 {
-	public class SceneLoader : MonoBehaviour
+	public partial class SceneLoader : MonoBehaviour
 	{
 		#region Private properties
-
-		private readonly List<Func<Task>> _onLoadStartTask = new();
-		private readonly List<Func<Task>> _onLoadCompleteTask = new();
+		private LoadSceneMode _loadSceneMode;	
+		private readonly List<SceneLoaderTaskModel> _onLoadStartTask = new();
+		private readonly List<SceneLoaderTaskModel> _onLoadCompleteTask = new();
 		private Action<float> _onProgress;
 		private int _sceneIndex = -1;
 		private List<int> _unloadSceneIndexes;
 		private float _startTasksProgressPercent;
 		private float _unloadSceneTasksProgressPercent;
 		private float _completeTasksProgressPercent;
-
+		private float _currentProgress = 0f;
+		
 		[SerializeField] private SceneLoaderUI _ui;
 
 		#endregion
 
 		#region Public methods
 
-		public SceneLoader RegisterOnLoadStartTask(Func<Task> onLoadStartTask)
+		public SceneLoader RegisterOnLoadStartTask(SceneLoaderTaskModel onLoadStartTask)
 		{
 			_onLoadStartTask.Add(onLoadStartTask);
 			return this;
 		}
 
-		public SceneLoader RegisterOnLoadCompleteTask(Func<Task> onLoadCompleteTask)
+		public SceneLoader RegisterOnLoadCompleteTask(SceneLoaderTaskModel onLoadCompleteTask)
 		{
 			_onLoadCompleteTask.Add(onLoadCompleteTask);
 			return this;
@@ -42,45 +43,58 @@ namespace vanhaodev.sceneloader
 			_onProgress += callback;
 		}
 
-		public void SetUnloadScenes(IEnumerable<int> sceneIndexes)
+		public Task LoadScene(string sceneName, LoadSceneMode mode = LoadSceneMode.Single)
 		{
-			_unloadSceneIndexes = new List<int>(sceneIndexes);
-		}
-
-		public void SetUnloadScenes(IEnumerable<string> sceneNames)
-		{
-			_unloadSceneIndexes = new List<int>();
-
-			foreach (var sceneName in sceneNames)
+			_sceneIndex = GetSceneIndexByName(sceneName);
+			_loadSceneMode = mode;
+			if (_loadSceneMode == LoadSceneMode.Single)
 			{
-				int index = GetSceneIndexByName(sceneName);
-				if (index != -1)
-				{
-					_unloadSceneIndexes.Add(index);
-				}
-				else
-				{
-					Debug.LogWarning($"Scene not found in BuildSettings: {sceneName}");
-				}
+				return HandleLoadSceneSingleAsync();
+			}
+			else
+			{
+				return HandleLoadSceneAdditiveAsync();
 			}
 		}
 
-		public Task LoadScene(string sceneName)
-		{
-			_sceneIndex = GetSceneIndexByName(sceneName);
-			return HandleLoadSceneAsync();
-		}
-
-		public Task LoadScene(int sceneIndex)
+		public Task LoadScene(int sceneIndex, LoadSceneMode mode = LoadSceneMode.Single)
 		{
 			_sceneIndex = sceneIndex;
-			return HandleLoadSceneAsync();
+			_loadSceneMode = mode;
+			if (_loadSceneMode == LoadSceneMode.Single)
+			{
+				return HandleLoadSceneSingleAsync();
+			}
+			else
+			{
+				return HandleLoadSceneAdditiveAsync();
+			}
 		}
 
 		#endregion
 
 		#region Private methods
 
+		private async Task LoadStartTasksAsync()
+		{
+			for (int i = 0; i < _onLoadStartTask.Count; i++)
+			{
+				_ui.SetLoadName(_onLoadStartTask[i].Name);
+				await _onLoadStartTask[i].Execute();
+				_currentProgress += _startTasksProgressPercent;
+				UpdateProgress(_currentProgress);
+			}
+		}
+		private async Task LoadCompleteTasksAsync()
+		{
+			for (int i = 0; i < _onLoadCompleteTask.Count; i++)
+			{
+				_ui.SetLoadName(_onLoadCompleteTask[i].Name);
+				await _onLoadCompleteTask[i].Execute();
+				_currentProgress += _completeTasksProgressPercent;
+				UpdateProgress(_currentProgress);
+			}
+		}
 		private int GetSceneIndexByName(string sceneName)
 		{
 			int sceneCount = SceneManager.sceneCountInBuildSettings;
@@ -123,88 +137,12 @@ namespace vanhaodev.sceneloader
 			_ui.SetProgress(progress);
 		}
 
-		private async Task HandleLoadSceneAsync()
-		{
-			//--------------------Show loading UI---------------------\\
-			float currentProgress = 0f;
-			UpdateProgress(currentProgress);
-			CalculateProgress();
-			_ui.ShowLoading();
-			
-			//--------------------Load start tasks---------------------\\
-			for (int i = 0; i < _onLoadStartTask.Count; i++)
-			{
-				await _onLoadStartTask[i]();
-				currentProgress += _startTasksProgressPercent;
-				UpdateProgress(currentProgress);
-			}
-
-			//--------------------Load new scene---------------------\\
-			AsyncOperation op = SceneManager.LoadSceneAsync(_sceneIndex, LoadSceneMode.Additive);
-			op.allowSceneActivation = false;
-			while (op.progress < 0.9f)
-			{
-				float sceneProgress = op.progress / 0.9f;
-				float totalProgress = 0.2f + sceneProgress * 0.4f;
-
-				currentProgress = totalProgress; // 🔥 sync
-
-				UpdateProgress(currentProgress);
-
-				await Task.Yield();
-			}
-			op.allowSceneActivation = true;
-			while (!op.isDone)
-			{
-				await Task.Yield();
-			}
-			currentProgress = 0.6f;
-			UpdateProgress(currentProgress);
-			Scene newScene = SceneManager.GetSceneByBuildIndex(_sceneIndex);
-			SceneManager.SetActiveScene(newScene);
-
-			//--------------------Unload old scenes---------------------\\
-			for (int i = 0; i < _unloadSceneIndexes?.Count; i++)
-			{
-				int index = _unloadSceneIndexes[i];
-
-				Scene scene = SceneManager.GetSceneByBuildIndex(index);
-
-				if (scene.IsValid() && scene.isLoaded)
-				{
-					await SceneManager.UnloadSceneAsync(scene);
-					currentProgress += _unloadSceneTasksProgressPercent;
-					UpdateProgress(currentProgress);
-				}
-			}
-			
-			currentProgress = 0.8f;
-			_onProgress?.Invoke(currentProgress);
-			_ui.SetProgress(currentProgress);
-		
-			//--------------------Load complete tasks---------------------\\
-			Debug.Log("Loading complete tasks");
-			for (int i = 0; i < _onLoadCompleteTask.Count; i++)
-			{
-				await _onLoadCompleteTask[i]();
-				currentProgress += _completeTasksProgressPercent;
-				UpdateProgress(currentProgress);
-			}
-			
-			currentProgress = 1f;
-			UpdateProgress(currentProgress);
-			await Task.Delay(200);
-		
-			//--------------------Hide loading UI---------------------\\
-			_ui.HideLoading();
-			OnFinish();
-		}
-
 		private void OnFinish()
 		{
 			_onLoadStartTask?.Clear();
 			_onLoadCompleteTask?.Clear();
 			_unloadSceneIndexes?.Clear();
+			_ui.SetLoadName("");
 		}
 
 		#endregion
